@@ -3,4 +3,4 @@ authors = ["Max Hofer"]
 language = "en"
 multilingual = false
 src = "src"
-title = "Test Driven Development in Shell using an AI"
+title = "Test Driven Development with Bash using an AI"
