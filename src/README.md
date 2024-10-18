@@ -9,4 +9,4 @@ TODO: Goal of this book, target group
 
 ## References
 
-https://github.com/dodie/testing-in-bash
+<https://github.com/dodie/testing-in-bash>
