@@ -1,0 +1,6 @@
+[book]
+authors = ["Max Hofer"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Test Driven Development in Shell using an AI"
