@@ -1,5 +1,7 @@
 # The Prototype
 
-- [Setup the project](setup_project.md)
-- [Test the prototyp](test_prototype.md)
+- [Setup the Project](setup_project.md)
+- [Test the Prototype](test_prototype.md)
+- [Test Code Refactoring](test_refactoring.md)
+- [The Happy Path](happy_path.md)
 

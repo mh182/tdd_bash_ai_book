@@ -1,4 +1,4 @@
-# Create project
+# Create the Project
 
 Prompting ChatGPT:
 
