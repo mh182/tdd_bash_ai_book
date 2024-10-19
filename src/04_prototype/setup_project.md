@@ -1,6 +1,4 @@
-# The Prototype
-
-## Ask for a project template
+# Create project
 
 Prompting ChatGPT:
 
@@ -175,7 +173,6 @@ Answer from ChatGPT:
 > make lint
 > make format
 > ```
-> ```
 > 
 > ### Instructions:
 > 1. Install `shfmt` and `shellcheck` for linting and formatting:
@@ -258,7 +255,6 @@ Answer from ChatGPT:
 > just lint
 > just format
 > ```
-> ```
 
 Jane doesn't feel confident to run test scripts in her environment. If she
 makes a mistake files may be deleted. She would like to run the tests in a
@@ -299,164 +295,6 @@ Answer from ChatGPT:
 > 
 > This setup allows you to run tests, lint, and format code consistently in isolated containerized environments using either `podman` or `docker`.
 
-## Test the Prototype
-
-Calling `just` led to an error:
-
-```bash
-just
-error: Unknown start of token:
- ——▶ justfile:2:42
-  │
-2 │ CONTAINER_ENGINE := $(if $(shell command -v podman 2>/dev/null),podman,docker)
-  │                                          ^
-```
-
-Jane noticed that the given shell expression wasn't a valid one. So she changed
-the `if` expression and called `just` again, which led to the following error:
-
-```bash
-just
-error: Unknown start of token:
- ——▶ justfile:2:42
-  │
-2 │ CONTAINER_ENGINE := $(if $(shell command -v podman 2>/dev/null),podman,docker)
-  │                                          ^
-```
-
-With the help of ChatGPT she found out she had to use backticks, `$()` doesn't
-work as command evaluation in `just`. After fixing the backticks the call to
-`docker` worked leading to a new error.
-
-```bash
-✦ ❯ just
-# Use the selected container engine to run the BATS tests
-docker run --rm -v $(pwd):/mnt -w /mnt bats/bats:latest bats tests/
-ERROR: Test file "/mnt/bats" does not exist.
-error: Recipe `test` failed on line 8 with exit code 1
-```
-
-`bats` documentation provides a chapter [how to use bats with
-docker](https://bats-core.readthedocs.io/en/stable/docker-usage.html). The call
-to the docker was wrong: we don't need the `bats` command. After Jane fixed the
-call, a new error popped up.
-
-
-```bash
-✦ ❯ just
-# Use the selected container engine to run the BATS tests
-docker run --rm -v $(pwd):/mnt -w /mnt bats/bats:latest tests
-1..2
-not ok 1 Script prints usage when no arguments are provided
-# (in test file tests/test_data_download.bats, line 18)
-#   `[ "$status" -eq 1 ]' failed
-not ok 2 Script downloads data when valid URL and directory are provided
-# (in test file tests/test_data_download.bats, line 24)
-#   `[ "$status" -eq 0 ]' failed
-
-The following warnings were encountered during tests:
-BW01: `run`'s command `./src/data_download` exited with code 127, indicating 'Command not found'. Use run's return code checks, e.g. `run -127`, to fix this message.
-      (from function `run' in file /opt/bats/lib/bats-core/test_functions.bash, line 426,
-       in test file tests/test_data_download.bats, line 17)
-BW01: `run`'s command `./src/data_download -u http://example.com/data -d tmp` exited with code 127, indicating 'Command not found'. Use run's return code checks, e.g. `run -127`, to fix this message.
-      (from function `run' in file /opt/bats/lib/bats-core/test_functions.bash, line 426,
-       in test file tests/test_data_download.bats, line 23)
-error: Recipe `test` failed on line 8 with exit code 1```
-```
-
-The good news: the test code is called. The not so good ones - both tests failed.
-`bats` [FAQ](https://bats-core.readthedocs.io/en/stable/warnings/BW01.html) had
-even an detailed description about this error. It seems `src/data_download`
-couldn't be found in the tests.
-
-Calling the script locally, without container, worked and it returned the same
-exit code as the test case expected. Changing the relative path in
-`test_data_download` to `../src/download_data` had no effect.
-
-```bash
-./src/data_download
-Usage: ./src/data_download [-u url] [-d directory]
-
-echo $?
-1
-```
-
-So Jane installed `bats` on here system and run the tests from the project root
-directory:
-
-```bash
-✦ ➜ bats tests/
-test_data_download.bats
- ✓ Script prints usage when no arguments are provided
- ✓ Script downloads data when valid URL and directory are provided
-
-2 tests, 0 failures
-```
-
-The test run with no failures. So why would the tests fail when executed in the
-container?
-
-Jane was not someone to give up lightly. After creating here own `bats`
-container image she called into the container and run `bats` from within
-reproducing the error.
-
-```bash
-✦ ➜ docker run --rm -it -v $(pwd):/mnt -w /mnt mybats
-bash-5.2# bats tests
-test_data_download.bats
- ✗ Script prints usage when no arguments are provided
-   (in test file tests/test_data_download.bats, line 18)
-     `[ "$status" -eq 1 ]' failed
- ✗ Script downloads data when valid URL and directory are provided
-   (in test file tests/test_data_download.bats, line 24)
-     `[ "$status" -eq 0 ]' failed
-
-2 tests, 2 failures
-
-
-The following warnings were encountered during tests:
-BW01: `run`'s command `./src/data_download` exited with code 127, indicating 'Command not found'. Use run's return code checks, e.g. `run -127`, to fix this message.
-      (from function `run' in file /opt/bats/lib/bats-core/test_functions.bash, line 297,
-       in test file tests/test_data_download.bats, line 17)
-BW01: `run`'s command `./src/data_download -u http://example.com/data -d tmp` exited with code 127, indicating 'Command not found'. Use run's return code checks, e.g. `run -127`, to fix this message.
-      (from function `run' in file /opt/bats/lib/bats-core/test_functions.bash, line 297,
-       in test file tests/test_data_download.bats, line 23)
-bash-5.2# src/data_download
-bash: src/data_download: cannot execute: required file not found
-bash-5.2# which bash
-/usr/local/bin/bash
-bash-5.2# grep bash src/data_download
-#!/bin/bash
-bash-5.2# ls -al /bin/bash
-ls: /bin/bash: No such file or directory
-```
-
-The reason for the failed tests was the shebang in `data_download`. In the
-Alpine based container `/bin/bash` didn't exist. The fix was easy, change the
-shebang to `#!/usr/bin/env bash`. Done that, everything worked fine.
-
-The other `just` commands had minor mistakes which Jane could fix easily. She
-changed `shfmt` not to run in the container since she had this tool installed
-on her local developer machine.
-
-Creating a [devcontainer](https://containers.dev/) for bash development is
-going to get on her TODO list.
-
-```just
-# Define variables for container engine
-CONTAINER_ENGINE := `if command -v podman 2>/dev/null; then echo podman; else echo docker; fi`
-
-# Define tasks for common operations
-
-test:
-    # Use the selected container engine to run the BATS tests
-    {{CONTAINER_ENGINE}} run --rm -it -v $(pwd):/mnt -w /mnt bats/bats:latest tests
-
-lint:
-    {{CONTAINER_ENGINE}} run --rm -v $(pwd):/mnt -w /mnt koalaman/shellcheck src/* tests/*
-
-format:
-    # Format files as configured in .editoconfig
-    shfmt -w src/*
-```
+Now eveything is setup to start the real work. Jane starts to test and modify
+the code generated by ChatGPT.
 
