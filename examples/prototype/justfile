@@ -1,15 +1,16 @@
 # Define variables for container engine
-CONTAINER_ENGINE := $(if $(shell command -v podman 2>/dev/null),podman,docker)
+CONTAINER_ENGINE := `if command -v podman 2>/dev/null; then echo podman; else echo docker; fi`
 
 # Define tasks for common operations
 
 test:
     # Use the selected container engine to run the BATS tests
-    {{CONTAINER_ENGINE}} run --rm -v $(pwd):/mnt -w /mnt bats/bats:latest bats tests/
+    {{CONTAINER_ENGINE}} run --rm -it -v $(pwd):/mnt -w /mnt bats/bats:latest tests
 
 lint:
-    {{CONTAINER_ENGINE}} run --rm -v $(pwd):/mnt -w /mnt koalaman/shellcheck shellcheck scripts/*
+    {{CONTAINER_ENGINE}} run --rm -v $(pwd):/mnt -w /mnt koalaman/shellcheck src/* tests/*
 
 format:
-    {{CONTAINER_ENGINE}} run --rm -v $(pwd):/mnt -w /mnt mvdan/shfmt shfmt -w -i 4 scripts/*
+    # Format files as configured in .editoconfig
+    shfmt -w src/*
 

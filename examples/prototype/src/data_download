@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # data_download - A script to download data from various sources.
 
@@ -36,4 +36,3 @@ download_data() {
 
 # Execute the download
 download_data
-
