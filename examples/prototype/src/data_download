@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# data_download - A script to download data from various sources.
+
+set -euo pipefail
+
+# Usage function
+usage() {
+    echo "Usage: $0 [-u url] [-d directory]"
+    exit 1
+}
+
+# Default values
+URL=""
+DIRECTORY="."
+
+# Parse options
+while getopts ":u:d:" opt; do
+    case $opt in
+        u) URL="$OPTARG" ;;
+        d) DIRECTORY="$OPTARG" ;;
+        *) usage ;;
+    esac
+done
+
+# Check if URL is set
+if [[ -z "$URL" ]]; then
+    usage
+fi
+
+# Download logic
+download_data() {
+    echo "Downloading data from $URL to $DIRECTORY"
+    # Insert download command here (e.g., curl or wget)
+}
+
+# Execute the download
+download_data
+

@@ -1,0 +1,7 @@
+# Add any custom shellcheck settings here.
+# Example: Ignoring specific rules if needed.
+# For more info on options, visit: https://www.shellcheck.net/
+
+# Exclude a specific warning, e.g., SC1090 for sourcing files
+# shellcheck disable=SC1090
+

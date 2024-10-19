@@ -1,0 +1,15 @@
+# Define variables for container engine
+CONTAINER_ENGINE := $(if $(shell command -v podman 2>/dev/null),podman,docker)
+
+# Define tasks for common operations
+
+test:
+    # Use the selected container engine to run the BATS tests
+    {{CONTAINER_ENGINE}} run --rm -v $(pwd):/mnt -w /mnt bats/bats:latest bats tests/
+
+lint:
+    {{CONTAINER_ENGINE}} run --rm -v $(pwd):/mnt -w /mnt koalaman/shellcheck shellcheck scripts/*
+
+format:
+    {{CONTAINER_ENGINE}} run --rm -v $(pwd):/mnt -w /mnt mvdan/shfmt shfmt -w -i 4 scripts/*
+
