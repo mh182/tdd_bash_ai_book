@@ -140,3 +140,53 @@ errors.
 
 [12 Factor CLI Apps]: https://medium.com/@jdxcode/12-factor-cli-apps-dd3c227a0e46
 [Command Line Interface Guideline]: https://clig.dev/#output
+
+Prompt ChatGPT:
+
+> The test case calling data_download with no arguments should be changed to
+> write a short error message of missing arguments followed by the usage and a
+> hint to call the script with the --help option. The output should be done on
+> STDERR, not STDOUT. Here is the current test case, which should be changed to
+> the specifcation above:
+>
+> ```bash
+> @test "Script prints usage when no arguments are provided" {
+>     run data_download
+>     assert_failure 1
+>     assert_output --partial "Usage:"
+> }
+> ```
+
+Answer from ChatGPT:
+
+> Here's the updated test case to reflect the new behavior, which writes a short error message followed by usage and a hint, all to STDERR:
+>
+> ```bash
+> @test "Script prints error and usage when no arguments are provided" {
+>     run data_download
+>     assert_failure 1
+>     assert_error --partial "Error: Missing arguments."
+>     assert_error --partial "Usage:"
+>     assert_error --partial "Hint: Call the script with --help for more information."
+> }
+> ```
+>
+> - **`assert_error`** is used to check the output on `STDERR` rather than `STDOUT`.
+> - The test checks for a short error message, usage, and the hint about the `--help` option.
+
+Prompt ChatGPT:
+
+> The test case for calling the data_download without arguments is changed:
+>
+> ```bash
+> @test "Script prints usage when no arguments are provided" {
+>     run data_download
+>     assert_failure 1
+>     assert_error --partial "data_download: missing argument"
+>     assert_error --partial "Usage: data_download URL [-d DIRECTORY]"
+>     assert_error --partial "Try 'data_download --help' fore more information."
+> }
+> ```
+>
+> This means the URL is not optional, the directory flag is optional. If the directory is not provided, the working directory from which the script is called is used as target directory.
+> Note that the name of the script is printed in the usage, without directory name. Please change data_download so this test would pass.
