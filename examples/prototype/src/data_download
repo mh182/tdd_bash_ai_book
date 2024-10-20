@@ -4,29 +4,41 @@
 
 set -euo pipefail
 
+# Global constants
+SCRIPT_NAME=$(basename "$0")
+
 # Global variables (initially empty)
 URL=""
-DIRECTORY="."
+DIRECTORY="$(pwd)"  # Default to the current working directory
+
+# Function to print error messages to STDERR
+err() {
+    echo "$@" >&2
+}
 
 # Usage function to show how to use the script
 usage() {
-    echo "Usage: $0 [-u url] [-d directory]"
+    err "Usage: $SCRIPT_NAME URL [-d DIRECTORY]"
+    err "Try '$SCRIPT_NAME --help' for more information."
     exit 1
 }
 
 # Function to parse command line arguments and set global variables
 parse_args() {
-    while getopts ":u:d:" opt; do
+    if [[ $# -lt 1 ]]; then
+        err "$SCRIPT_NAME: missing argument"
+        usage
+    fi
+
+    URL="$1"
+    shift
+
+    while getopts ":d:" opt; do
         case $opt in
-            u) URL="$OPTARG" ;;
             d) DIRECTORY="$OPTARG" ;;
             *) usage ;;
         esac
     done
-
-    if [[ -z "$URL" ]]; then
-        usage
-    fi
 
     # Set global variables as read-only
     readonly URL
