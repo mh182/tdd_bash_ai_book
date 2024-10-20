@@ -4,35 +4,47 @@
 
 set -euo pipefail
 
-# Usage function
+# Global variables (initially empty)
+URL=""
+DIRECTORY="."
+
+# Usage function to show how to use the script
 usage() {
     echo "Usage: $0 [-u url] [-d directory]"
     exit 1
 }
 
-# Default values
-URL=""
-DIRECTORY="."
+# Function to parse command line arguments and set global variables
+parse_args() {
+    while getopts ":u:d:" opt; do
+        case $opt in
+            u) URL="$OPTARG" ;;
+            d) DIRECTORY="$OPTARG" ;;
+            *) usage ;;
+        esac
+    done
 
-# Parse options
-while getopts ":u:d:" opt; do
-    case $opt in
-        u) URL="$OPTARG" ;;
-        d) DIRECTORY="$OPTARG" ;;
-        *) usage ;;
-    esac
-done
+    if [[ -z "$URL" ]]; then
+        usage
+    fi
 
-# Check if URL is set
-if [[ -z "$URL" ]]; then
-    usage
-fi
+    # Set global variables as read-only
+    readonly URL
+    readonly DIRECTORY
+}
 
-# Download logic
+# Function to download the data
 download_data() {
     echo "Downloading data from $URL to $DIRECTORY"
     wget -P "${DIRECTORY}" "${URL}"
 }
 
-# Execute the download
-download_data
+# Main function
+main() {
+    parse_args "$@"
+    download_data
+}
+
+# Call the main function
+main "$@"
+
