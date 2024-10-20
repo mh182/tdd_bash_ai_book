@@ -10,3 +10,4 @@
   - [Test the Prototype](./04_prototype/test_prototype.md)
   - [Test Code Refactoring](./04_prototype/test_refactoring.md)
   - [The Happy Path](./04_prototype/happy_path.md)
+  - [Complying to Shell Style Guide](./04_prototype/shell_style_guide.md)
