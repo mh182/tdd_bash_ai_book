@@ -31,7 +31,7 @@ fi
 # Download logic
 download_data() {
     echo "Downloading data from $URL to $DIRECTORY"
-    # Insert download command here (e.g., curl or wget)
+    wget -P "${DIRECTORY}" "${URL}"
 }
 
 # Execute the download

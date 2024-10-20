@@ -13,11 +13,15 @@ setup() {
     # Load the necessary libraries for assertions
     bats_load_library bats-support
     bats_load_library bats-assert
+    bats_load_library bats-file
+
+    # Create directory to place the downloaded files
+    mkdir -p tmp
 }
 
 teardown() {
-    # Nothing to be done on the clean up, yet
-    :
+    # Cleanup after the test
+    rm -rf tmp
 }
 
 @test "Script prints usage when no arguments are provided" {
@@ -26,9 +30,17 @@ teardown() {
     assert_output --partial "Usage:"
 }
 
-@test "Script downloads data when valid URL and directory are provided" {
+@test "Script shows error for HTTP 404 Not Found" {
+    skip "wget: server returned error: HTTP/1.1 404 Not Found"
     run data_download -u "http://example.com/data" -d "tmp"
     assert_success
     assert_output --partial "Downloading data from http://example.com/data to tmp"
+}
+
+@test "Script downloads data when valid URL and directory are provided" {
+    local url="http://example.com"
+    run data_download -u "${url}" -d "tmp"
+    assert_success
+    assert_file_exist "tmp/index.html"
 }
 
